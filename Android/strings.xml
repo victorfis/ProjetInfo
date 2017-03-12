@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Watch\'Int 1.0</string>
+    <string name="Text">Status: -</string>
+    <string name="on">Turn On Bluetooth </string>
+    <string name="off">Turn Off Bluetooth</string>
+    <string name="Find">Search new devices</string>
+    <string name="List">List paired Devices</string>
+
+
+
+</resources>

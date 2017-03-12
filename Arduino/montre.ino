@@ -14,59 +14,72 @@
  *  Screen SCL_PIN-A5
  */ 
  
-#include <TimeLib.h>
-#include <Adafruit_ssd1306syp.h> //This is a simplified library
+#include <TimeLib.h>    // Library of Time
+#include <Adafruit_ssd1306syp.h>    // Library of the screen
+#include <SoftwareSerial.h>    // Library of software serial communication
 
-#define SDA_PIN A4  //SDA pin of OLED connected to A4
-#define SCL_PIN A5  //SCL pin of OLED connected to A5
+// Define the pins for RX, TX on the Arduino board respectively to connect with Bluetooth
+SoftwareSerial mySerial(10, 11);    
 
+// Define the pins for the I²C Bus to communicate with OLED
+#define SDA_PIN A4    //SDA pin of OLED connected to A4
+#define SCL_PIN A5    //SCL pin of OLED connected to A5
+// Define the objet "display" of OLED
 Adafruit_ssd1306syp display(SDA_PIN,SCL_PIN);
 
-#define TIME_HEADER  "T"   // Header tag for serial time sync message
+#define TIME_HEADER  "T"    // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
 void setup()  {
-  Serial.begin(9600); //enable bluetooth with tx and rx pins
-  while (!Serial) ; // Needed for Leonardo only
-  pinMode(13, OUTPUT);  //set 13th pin as output
-  setSyncProvider( requestSync);  //set function to call when sync required
-  Serial.println("Waiting for sync message");
-  delay(1000);  //1 sec delay
-  //Initialization of OLED
-  display.initialize(); //initialize the screen 
-  display.setTextSize(2); //set the text size 
-  display.setTextColor(WHITE);  //set the text color (white seen as blue actually)
-  display.setCursor(10,20);  //set the position of the 1st letter
-  display.print("WATCH'INT"); //set the text WATCH'INT
-  display.update();
+  // Initialisation of Bluetooth communication module
+  mySerial.begin(38400);    // Set the baud of port to 38400 in order to communicate with Bluetooth
+  pinMode(13, OUTPUT);    // Define the indicator Led PIN 13 as output
+  setSyncProvider(requestSync);    // Set function to call when sync required
+  mySerial.println("Waiting for sync message");    // Show the sync require message on the bluetooth terminal
+  delay(1000);    // 1 sec delay
+  
+  // Initialisation of OLED Screen module 
+  display.initialize();    // Initialize the screen
+  display.setTextSize(2);    // set the text size
+  display.setTextColor(WHITE);    // set the text color as white (white seen as blue actually)
+  display.setCursor(10,20);    // set the position of the 1st letter
+  display.print("WATCH'INT");    // show the welcome page in waiting for the sync
+  display.update();    // update all the changes to the screen
+
+
 }
 
 void loop(){    
-  if (Serial.available()) { //if something is received
-    processSyncMessage(); //call a function to react to received messages
+  // if the bluetooth serial communication is established, then process the synchronisation
+  if (mySerial.available()) {    // if something is received
+    processSyncMessage();    // call a function to react to received messages
   }
-  if (timeStatus()!= timeNotSet) { //if the time is set
-    display.clear(); 
-    digitalClockDisplay();  //it is displayed
+ 
+  // if time status is set
+  if (timeStatus()!= timeNotSet) {
+    display.clear();
+    digitalClockDisplay();    // clock is displayed
   }
-  if (timeStatus() == timeSet) {  //if the time is set
+  // if the time is set
+  if (timeStatus() == timeSet) {
     digitalWrite(13, HIGH); // LED on if synced
   } else {
     digitalWrite(13, LOW);  // LED off if needs refresh
   }
-  delay(1000); //1 sec delay
+  delay(1000);
 }
 
 void digitalClockDisplay(){
   // digital clock display of the time
   display.setTextSize(2);
   display.setTextColor(WHITE);
-  display.setCursor(10,20);
-  display.print(hour());//diplay time
+  display.setCursor(15,20);
+  display.print(hour());    // display time
   printDigits(minute());
   printDigits(second());
-  display.println(); // equivalent to \n
-  display.print(day());//display date
+  // change the line to display the date
+  display.setCursor(15,40);
+  display.print(day());    //display date
   display.print("/");
   display.print(month());
   display.print("/");
@@ -77,9 +90,9 @@ void digitalClockDisplay(){
 void printDigits(int digits){
   // utility function for digital clock display: prints preceding colon and leading 0
   display.print(":");
-  if(digits < 10)     // if the number is between 0 and 9
-    display.print('0'); //print a 0 before
-  display.print(digits); //display minutes or seconds
+  if(digits < 10)    // if the number is between 0 and 9
+    display.print('0');    // print a 0 before
+  display.print(digits);    // display minutes or seconds
 }
 
 
@@ -87,8 +100,8 @@ void processSyncMessage() {
   unsigned long pctime;
   const unsigned long DEFAULT_TIME = 1357041600; // Jan 1 2013
 
-  if(Serial.find(TIME_HEADER)) {
-     pctime = Serial.parseInt();
+  if(mySerial.find(TIME_HEADER)) {
+     pctime = mySerial.parseInt();
      if( pctime >= DEFAULT_TIME) { // check the integer is a valid time (greater than Jan 1 2013)
        setTime(pctime); // Sync Arduino clock to the time received on the serial port
      }
@@ -97,7 +110,6 @@ void processSyncMessage() {
 
 time_t requestSync()
 {
-  Serial.write(TIME_REQUEST);  
+  mySerial.write(TIME_REQUEST);  
   return 0; // the time will be sent later in response to serial mesg
 }
-
