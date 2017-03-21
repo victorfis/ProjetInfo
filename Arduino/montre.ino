@@ -15,7 +15,13 @@
  */ 
  
 #include <TimeLib.h>    // Library of Time
-#include <Adafruit_ssd1306syp.h>    // Library of the screen
+
+// Library of the screen
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+
 #include <SoftwareSerial.h>    // Library of software serial communication
 
 // Define the pins for RX, TX on the Arduino board respectively to connect with Bluetooth
@@ -24,8 +30,11 @@ SoftwareSerial mySerial(10, 11);
 // Define the pins for the I²C Bus to communicate with OLED
 #define SDA_PIN A4    //SDA pin of OLED connected to A4
 #define SCL_PIN A5    //SCL pin of OLED connected to A5
+
 // Define the objet "display" of OLED
-Adafruit_ssd1306syp display(SDA_PIN,SCL_PIN);
+#define OLED_RESET 4
+Adafruit_SSD1306 display(OLED_RESET);
+
 
 #define TIME_HEADER  "T"    // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
@@ -39,13 +48,13 @@ void setup()  {
   delay(1000);    // 1 sec delay
   
   // Initialisation of OLED Screen module 
-  display.initialize();    // Initialize the screen
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x64)
+  display.clearDisplay(); // show splashscreen
   display.setTextSize(2);    // set the text size
   display.setTextColor(WHITE);    // set the text color as white (white seen as blue actually)
   display.setCursor(10,20);    // set the position of the 1st letter
   display.print("WATCH'INT");    // show the welcome page in waiting for the sync
-  display.update();    // update all the changes to the screen
-
+  display.display();    // update all the changes to the screen
 
 }
 
@@ -57,7 +66,8 @@ void loop(){
  
   // if time status is set
   if (timeStatus()!= timeNotSet) {
-    display.clear();
+    //display.clear();
+    display.clearDisplay();
     digitalClockDisplay();    // clock is displayed
   }
   // if the time is set
@@ -84,7 +94,7 @@ void digitalClockDisplay(){
   display.print(month());
   display.print("/");
   display.print(year()); 
-  display.update();
+  display.display();
 }
 
 void printDigits(int digits){
