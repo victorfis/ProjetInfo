@@ -56,14 +56,19 @@ void setup()  {
   display.print("WATCH'INT");    // show the welcome page in waiting for the sync
   display.display();    // update all the changes to the screen
 
+  // if the bluetooth serial communication is established, then process the synchronisation
+  while (!mySerial.available()) {    // if sync signal is not received
+    delay(10);    // wait for the signal 
+  }
+  processSyncMessage();    // call a function to react to received messages
 }
 
 void loop(){    
-  // if the bluetooth serial communication is established, then process the synchronisation
-  if (mySerial.available()) {    // if something is received
-    processSyncMessage();    // call a function to react to received messages
-  }
- 
+  timeshow(); //Time showing
+}
+
+/*-------------------------------------AFFICHAGE DU TEMPS ET DE L'HEURE-------------------------------------------------------*/
+void timeshow(){
   // if time status is set
   if (timeStatus()!= timeNotSet) {
     //display.clear();
@@ -78,7 +83,6 @@ void loop(){
   }
   delay(1000);
 }
-
 void digitalClockDisplay(){
   // digital clock display of the time
   display.setTextSize(2);
@@ -123,3 +127,4 @@ time_t requestSync()
   mySerial.write(TIME_REQUEST);  
   return 0; // the time will be sent later in response to serial mesg
 }
+/*------------------------------------------------------------------------------------------------------------------------------*/
