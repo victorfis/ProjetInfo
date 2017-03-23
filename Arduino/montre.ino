@@ -39,6 +39,11 @@ Adafruit_SSD1306 display(OLED_RESET);
 #define TIME_HEADER  "T"    // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
+#define SMS_HEADER "S"
+#define USMS_HEADER "N"
+int typeInfo;
+
+
 void setup()  {
   // Initialisation of Bluetooth communication module
   mySerial.begin(38400);    // Set the baud of port to 38400 in order to communicate with Bluetooth
@@ -64,7 +69,8 @@ void setup()  {
 }
 
 void loop(){    
-  timeshow(); //Time showing
+  timeshow();    // Time showing
+  checkSMS();
 }
 
 /*-------------------------------------AFFICHAGE DU TEMPS ET DE L'HEURE-------------------------------------------------------*/
@@ -81,7 +87,7 @@ void timeshow(){
   } else {
     digitalWrite(13, LOW);  // LED off if needs refresh
   }
-  delay(1000);
+  //delay(1000);
 }
 void digitalClockDisplay(){
   // digital clock display of the time
@@ -128,3 +134,39 @@ time_t requestSync()
   return 0; // the time will be sent later in response to serial mesg
 }
 /*------------------------------------------------------------------------------------------------------------------------------*/
+
+/*-----------------------------------------CHECK SMS--------------------------------------------------------------------*/
+void checkSMS(){
+  if(mySerial.available()) {
+    typeInfo=processSyncInfo();
+  }
+  if (typeInfo == 1){
+    showSMS();
+  }else if (typeInfo == 2)
+  {
+    unshow();
+  }
+}
+
+int processSyncInfo() {
+  if(mySerial.find(SMS_HEADER)) {
+    return 1;
+  }
+  if(mySerial.find(USMS_HEADER)) {
+    return 2;
+  }
+  return 0;
+}
+
+void showSMS() {
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(5,5);
+  display.print("Vous avez un nouveau SMS!");    // display time 
+  display.display();
+}
+
+void unshow() {
+  display.clearDisplay();
+}
+/*--------------------------------------------------------------------------------------------------------*/
