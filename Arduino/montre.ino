@@ -39,10 +39,11 @@ Adafruit_SSD1306 display(OLED_RESET);
 #define TIME_HEADER  "T"    // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
-#define SMS_HEADER "S"
-#define USMS_HEADER "N"
-int typeInfo;
+#define INFO_HEADER "I"    // Header tag for notification message
 
+int typeInfo;    // Indicator for the type of infomation folowing INFO_HEADER
+
+const int BUTTON = 7;
 
 void setup()  {
   // Initialisation of Bluetooth communication module
@@ -68,9 +69,18 @@ void setup()  {
   processSyncMessage();    // call a function to react to received messages
 }
 
-void loop(){    
+void loop(){ 
+  int held = 0;  
+  while ((digitalRead(BUTTON) == HIGH) && (held < 10)){
+    delay(100);
+    held++;
+  }
+
+  if(held >= 10){
+    setup();
+  } 
+  checkInfo();
   timeshow();    // Time showing
-  checkSMS();
 }
 
 /*-------------------------------------AFFICHAGE DU TEMPS ET DE L'HEURE-------------------------------------------------------*/
@@ -135,38 +145,32 @@ time_t requestSync()
 }
 /*------------------------------------------------------------------------------------------------------------------------------*/
 
-/*-----------------------------------------CHECK SMS--------------------------------------------------------------------*/
-void checkSMS(){
+/*-----------------------------------------CHECK INFO--------------------------------------------------------------------*/
+void checkInfo(){
+  /* Check for new notification*/
   if(mySerial.available()) {
-    typeInfo=processSyncInfo();
+    if (mySerial.find(INFO_HEADER))
+    {
+      typeInfo = mySerial.parseInt();    // extract type of information
+    }
   }
-  if (typeInfo == 1){
-    showSMS();
-  }else if (typeInfo == 2)
-  {
-    unshow();
+  /* We define 0 as notifications read*/
+  if (typeInfo != 0){
+    showInfo(typeInfo);    //if there is new notification
   }
+  else display.clearDisplay();
 }
 
-int processSyncInfo() {
-  if(mySerial.find(SMS_HEADER)) {
-    return 1;
-  }
-  if(mySerial.find(USMS_HEADER)) {
-    return 2;
-  }
-  return 0;
-}
-
-void showSMS() {
+void showInfo(int typeInfo) {
   display.setTextSize(1);
-  display.setTextColor(WHITE);
+  display.setTextColor(WHITE);    //Set the cursor 
   display.setCursor(5,5);
-  display.print("Vous avez un nouveau SMS!");    // display time 
+  switch (typeInfo) {    // judge the type of notificaiton
+    case 1 : display.print("Vous avez un nouveau SMS!"); break;
+    case 2 : display.print("Vous avez un nouveau mail!"); break;
+    case 3 : display.print("Vous avez un rappel!"); break;
+    default : display.print("WTF?!");
+  }
   display.display();
-}
-
-void unshow() {
-  display.clearDisplay();
 }
 /*--------------------------------------------------------------------------------------------------------*/
