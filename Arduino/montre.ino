@@ -43,9 +43,9 @@ Adafruit_SSD1306 display(OLED_RESET);
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
 #define INFO_HEADER "I"    // Header tag for notification message
-
 int typeInfo;    // Indicator for the type of infomation folowing INFO_HEADER
 
+const int BUTTON = 7;
 
 void setup()  {
   // Initialisation of Bluetooth communication module
@@ -80,7 +80,17 @@ void setup()  {
   noTone(buzzer);
 }
 
-void loop(){    
+
+void loop(){ 
+  int held = 0;  
+  while ((digitalRead(BUTTON) == HIGH) && (held < 10)){
+    delay(100);
+    held++;
+  }
+
+  if(held >= 10){
+    setup();
+  }
   checkInfo();
   timeshow();    // Time showing
 }
