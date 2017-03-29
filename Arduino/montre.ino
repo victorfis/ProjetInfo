@@ -31,6 +31,9 @@ SoftwareSerial mySerial(10, 11);
 #define SDA_PIN A4    //SDA pin of OLED connected to A4
 #define SCL_PIN A5    //SCL pin of OLED connected to A5
 
+//Define pin for buzzer
+#define buzzer 9
+
 // Define the objet "display" of OLED
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);
@@ -39,15 +42,16 @@ Adafruit_SSD1306 display(OLED_RESET);
 #define TIME_HEADER  "T"    // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
-#define SMS_HEADER "S"
-#define USMS_HEADER "N"
-int typeInfo;
+#define INFO_HEADER "I"    // Header tag for notification message
+
+int typeInfo;    // Indicator for the type of infomation folowing INFO_HEADER
 
 
 void setup()  {
   // Initialisation of Bluetooth communication module
   mySerial.begin(38400);    // Set the baud of port to 38400 in order to communicate with Bluetooth
   pinMode(13, OUTPUT);    // Define the indicator Led PIN 13 as output
+  pinMode(buzzer, OUTPUT); // Set buzzer - pin 9 as an output
   setSyncProvider(requestSync);    // Set function to call when sync required
   mySerial.println("Waiting for sync message");    // Show the sync require message on the bluetooth terminal
   delay(1000);    // 1 sec delay
@@ -59,6 +63,9 @@ void setup()  {
   display.setTextColor(WHITE);    // set the text color as white (white seen as blue actually)
   display.setCursor(10,20);    // set the position of the 1st letter
   display.print("WATCH'INT");    // show the welcome page in waiting for the sync
+  tone(buzzer, 2093); // do
+  delay(100);        // ...for 0.1 sec
+  noTone(buzzer);
   display.display();    // update all the changes to the screen
 
   // if the bluetooth serial communication is established, then process the synchronisation
@@ -66,11 +73,16 @@ void setup()  {
     delay(10);    // wait for the signal 
   }
   processSyncMessage();    // call a function to react to received messages
+  tone(buzzer, 2093); // do
+  delay(100);        // ...for 0.1 sec
+  tone(buzzer, 1568); // Sol
+  delay(100);        // ...for 0,1 sec
+  noTone(buzzer);
 }
 
 void loop(){    
+  checkInfo();
   timeshow();    // Time showing
-  checkSMS();
 }
 
 /*-------------------------------------AFFICHAGE DU TEMPS ET DE L'HEURE-------------------------------------------------------*/
@@ -135,38 +147,32 @@ time_t requestSync()
 }
 /*------------------------------------------------------------------------------------------------------------------------------*/
 
-/*-----------------------------------------CHECK SMS--------------------------------------------------------------------*/
-void checkSMS(){
+/*-----------------------------------------CHECK INFO--------------------------------------------------------------------*/
+void checkInfo(){
+  /* Check for new notification*/
   if(mySerial.available()) {
-    typeInfo=processSyncInfo();
+    if (mySerial.find(INFO_HEADER))
+    {
+      typeInfo = mySerial.parseInt();    // extract type of information
+    }
   }
-  if (typeInfo == 1){
-    showSMS();
-  }else if (typeInfo == 2)
-  {
-    unshow();
+  /* We define 0 as notifications read*/
+  if (typeInfo != 0){
+    showInfo(typeInfo);    //if there is new notification
   }
+  else display.clearDisplay();
 }
 
-int processSyncInfo() {
-  if(mySerial.find(SMS_HEADER)) {
-    return 1;
-  }
-  if(mySerial.find(USMS_HEADER)) {
-    return 2;
-  }
-  return 0;
-}
-
-void showSMS() {
+void showInfo(int typeInfo) {
   display.setTextSize(1);
-  display.setTextColor(WHITE);
+  display.setTextColor(WHITE);    //Set the cursor 
   display.setCursor(5,5);
-  display.print("Vous avez un nouveau SMS!");    // display time 
+  switch (typeInfo) {    // judge the type of notificaiton
+    case 1 : display.print("Vous avez un nouveau SMS!"); break;
+    case 2 : display.print("Vous avez un nouveau mail!"); break;
+    case 3 : display.print("Vous avez un rappel!"); break;
+    default : display.print("WTF?!");
+  }
   display.display();
-}
-
-void unshow() {
-  display.clearDisplay();
 }
 /*--------------------------------------------------------------------------------------------------------*/
