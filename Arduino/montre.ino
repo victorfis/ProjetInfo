@@ -31,6 +31,9 @@ SoftwareSerial mySerial(10, 11);
 #define SDA_PIN A4    //SDA pin of OLED connected to A4
 #define SCL_PIN A5    //SCL pin of OLED connected to A5
 
+//Define pin for buzzer
+#define buzzer 9
+
 // Define the objet "display" of OLED
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);
@@ -40,7 +43,6 @@ Adafruit_SSD1306 display(OLED_RESET);
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
 #define INFO_HEADER "I"    // Header tag for notification message
-
 int typeInfo;    // Indicator for the type of infomation folowing INFO_HEADER
 
 const int BUTTON = 7;
@@ -49,6 +51,7 @@ void setup()  {
   // Initialisation of Bluetooth communication module
   mySerial.begin(38400);    // Set the baud of port to 38400 in order to communicate with Bluetooth
   pinMode(13, OUTPUT);    // Define the indicator Led PIN 13 as output
+  pinMode(buzzer, OUTPUT); // Set buzzer - pin 9 as an output
   setSyncProvider(requestSync);    // Set function to call when sync required
   mySerial.println("Waiting for sync message");    // Show the sync require message on the bluetooth terminal
   delay(1000);    // 1 sec delay
@@ -60,6 +63,9 @@ void setup()  {
   display.setTextColor(WHITE);    // set the text color as white (white seen as blue actually)
   display.setCursor(10,20);    // set the position of the 1st letter
   display.print("WATCH'INT");    // show the welcome page in waiting for the sync
+  tone(buzzer, 2093); // do
+  delay(100);        // ...for 0.1 sec
+  noTone(buzzer);
   display.display();    // update all the changes to the screen
 
   // if the bluetooth serial communication is established, then process the synchronisation
@@ -67,7 +73,13 @@ void setup()  {
     delay(10);    // wait for the signal 
   }
   processSyncMessage();    // call a function to react to received messages
+  tone(buzzer, 2093); // do
+  delay(100);        // ...for 0.1 sec
+  tone(buzzer, 1568); // Sol
+  delay(100);        // ...for 0,1 sec
+  noTone(buzzer);
 }
+
 
 void loop(){ 
   int held = 0;  
@@ -78,7 +90,7 @@ void loop(){
 
   if(held >= 10){
     setup();
-  } 
+  }
   checkInfo();
   timeshow();    // Time showing
 }
