@@ -28,3 +28,10 @@ Dans le dossier Arduino, montre.ino est le programme principal, bluetoothTest.in
 2. ou afficher SMR séparament
 3. extrait chaque chiffre pour indiquer le nombre de nouveaux messages.
 4. afficher le contenu de chaque type de notif pendant 5 second
+
+
+#### Interruption
+A voir
+
+#### Test
+Si on arrive à communiquer avec Arduino à partir du terminal d'un PC, on pourrait écrire un programme de bash pour tester les fonctions automatiquement
