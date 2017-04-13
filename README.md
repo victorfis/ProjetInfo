@@ -20,3 +20,11 @@ Dans le dossier Arduino, montre.ino est le programme principal, bluetoothTest.in
 6. Autres fonctions si possible
 7. Mode d'affichage. Boucle ou Réponse
 8. __Test__
+
+
+
+#### Affichage
+1. afficher "S M R" dans une structure de condition
+- ou afficher SMR séparament
+- extrait chaque chiffre pour indiquer le nombre de nouveaux messages.
+- afficher le contenu de chaque type de notif pendant 5 second
