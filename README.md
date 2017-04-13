@@ -25,6 +25,6 @@ Dans le dossier Arduino, montre.ino est le programme principal, bluetoothTest.in
 
 #### Affichage
 1. afficher "S M R" dans une structure de condition
-- ou afficher SMR séparament
-- extrait chaque chiffre pour indiquer le nombre de nouveaux messages.
-- afficher le contenu de chaque type de notif pendant 5 second
+2. ou afficher SMR séparament
+3. extrait chaque chiffre pour indiquer le nombre de nouveaux messages.
+4. afficher le contenu de chaque type de notif pendant 5 second
