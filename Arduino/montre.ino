@@ -80,6 +80,9 @@ void setup()  {
   noTone(buzzer);
 }
 
+/*----------------------------------RESET---------------------------------------------*/
+void (*resetFunc)(void) = 0;
+/*------------------------------------------------------------------------------------*/
 
 void loop(){ 
   int held = 0;  
@@ -89,7 +92,7 @@ void loop(){
   }
 
   if(held >= 10){
-    setup();
+    resetFunc();
   }
   checkInfo();
   timeshow();    // Time showing
