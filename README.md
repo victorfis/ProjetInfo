@@ -28,12 +28,12 @@ Dans le dossier Arduino, montre.ino est le programme principal, bluetoothTest.in
 3. extrait chaque chiffre pour indiquer le nombre de nouveaux messages.
 4. afficher le contenu de chaque type de notif pendant 5 second  
 
-I000 SO MO R0 => Effacé
-I100 S1 M0 R0 => "Bonjour!"(moins de 10 charactères) => afficher 
-I010 S0 M1 R0 => "From NOM" => afficher
-I001 S0 M0 R1 => "R:CONTENU" => afficher
+I000 SO MO R0 => Effacé  
+I100 S1 M0 R0 => "Bonjour!"(moins de 10 charactères) => afficher  
+I010 S0 M1 R0 => "From NOM" => afficher  
+I001 S0 M0 R1 => "R:CONTENU" => afficher  
 
-Tous les notifs reste sur l'écran jusqu'à la reception du nouveau message ou le poussoir du bouton
+Tous les notifs reste sur l'écran jusqu'à la reception du nouveau message ou le poussoir du bouton  
 
 #### Interruption
 A voir
