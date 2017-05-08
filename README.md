@@ -17,7 +17,7 @@ Dans le dossier Arduino, montre.ino est le programme principal, bluetoothTest.in
   - 4 parties principales: Synchronisation bluetooth, affichage d'ecran, temps, Notification processing 
 
 ### Partie Android
-#### Avancement
+#### Avancement
 
 #### Travail à venir
 
