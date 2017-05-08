@@ -4,6 +4,22 @@ Sont présents le code de l'application Android et celui de la carte Arduino.
 
 Dans le dossier Arduino, montre.ino est le programme principal, bluetoothTest.ino est un programme d'un test intermidiaire du module bluetooth, alors que les autres fichiers sont inclus dans la bibliothèque. 
 
+##### Setup
+1. Connection
+2. Arduino envoie "TIME" à Android
+3. Android respond "T1234567890"(Unix time)
+
+##### Check
+1. Android reçois un message, un mail ou il y a un rappel
+2. Android envoie I100[type de message]:[le_message] (ou l'expéditeur)
+3. Arduino les affiche
+
+##### Cancel
+1. L'utilisateur pousse le bouton
+2. Arduino envoie "Cancel"
+3. Android ignore les notification
+4. Android renvoie "I000"
+
 ## Suivi 09/05
 ### Partie Arduino
 #### Avancement
