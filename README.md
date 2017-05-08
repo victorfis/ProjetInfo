@@ -6,7 +6,7 @@ Dans le dossier Arduino, montre.ino est le programme principal, bluetoothTest.in
 
 ##### Setup
 1. Connection
-2. Arduino envoie "TIME" à Android
+2. Arduino envoie "T"(Time) à Android
 3. Android respond "T1234567890"(Unix time)
 
 ##### Check
@@ -16,7 +16,7 @@ Dans le dossier Arduino, montre.ino est le programme principal, bluetoothTest.in
 
 ##### Cancel
 1. L'utilisateur pousse le bouton
-2. Arduino envoie "Cancel"
+2. Arduino envoie "C"(Cancel)
 3. Android ignore les notification
 4. Android renvoie "I000"
 
