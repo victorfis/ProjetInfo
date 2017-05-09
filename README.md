@@ -30,15 +30,15 @@ Dans le dossier Arduino, montre.ino est le programme principal, bluetoothTest.in
 - Ajouter le son (buzzer) lors de la reception d'un message (notification)
 - Ajouter la fonction du bouton d'effacer les notifications
 - Ecrire les Unit Tests 
-  - 4 parties principales: Synchronisation bluetooth, affichage d'ecran, temps, Notification processing 
+    - 4 parties principales: Synchronisation bluetooth, affichage d'ecran, temps, Notification processing 
 
 ### Partie Android
 #### Avancement
-
+- Envoi de la date et de l'heure à l'Arduino lors d'envoi du message "T" dès le démarrage
+- Reprise de l'ancienne interface graphique
 #### Travail à venir
-
-
-
+- Ajouter l'envoi d'un message type notification lors de la reception d'un SMS/mail/rappel
+- Ajouter une boite de dialogue pour voir les communications entre l'Arduino et l'Android
 
 
 
