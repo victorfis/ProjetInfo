@@ -7,9 +7,13 @@
     This prototype is aimed at showing the time on the OLED screen by synchronizing the time via Bluetooth
     Time-sychronizing messages consists of the letter T followed by ten digit time (as seconds since Jan 1 1970)
     For example, we can send the text on the next line using Bluetooth Terminal to set the clock to noon Jan 1 2013: T1357041600
+    This watch can also show the amount of different types of notifications and their contents. With the help of a button and a buzzer,
+    we simplify the human-machine interaction.
 
-    Bluetooth TX-10(RX)
-    Bluetooth RX-11(TX)
+    Wring:
+
+    Bluetooth TX-10(RX on the Arduino)
+    Bluetooth RX-11(TX on the Arduino)
     Screen SDA_PIN-A4
     Screen SCL_PIN-A5
     Button 7
@@ -42,7 +46,7 @@ Adafruit_SSD1306 display(OLED_RESET);
 
 // Time message define
 #define TIME_HEADER  "T"    // Header tag for serial time sync message
-#define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
+#define TIME_REQUEST  7    // ASCII bell character requests a time sync message
 
 // Info message define
 #define INFO_HEADER "I"    // Header tag for notification message
@@ -65,7 +69,7 @@ void setup()  {
 
   // Time synchronisation request
   setSyncProvider(requestSync);    // Set function to call when sync required
-  mySerial.println("TIME");    // Show the sync require message on the bluetooth terminal
+  mySerial.println("T");    // Show the sync require message on the bluetooth terminal
 
   delay(1000);    // 1 sec delay
 
@@ -96,9 +100,9 @@ void setup()  {
   noTone(buzzer);
 }
 
-/*----------------------------------RESET---------------------------------------------*/
+/*---------------------------------------------------RESET--------------------------------------------------------*/
 void (*resetFunc)(void) = 0;    // Set the pointer to the beginning in order to reset
-/*------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------------------------------------*/
 
 void loop() {
   // Detect the reset signal
@@ -108,9 +112,10 @@ void loop() {
     held++;
   }
 
-  if (held >= 10) {
+  if (held >= 10)
     resetFunc();    // If the button is held pushed for 1 sec, watch reset
-  }
+  else if(held < 10 && held != 0)
+      mySerial.println("C");    // If not, send the request to clear the notif
 
   checkInfo();    // Notification checking
   delay(800);
@@ -173,14 +178,13 @@ void processSyncMessage() {
   }
 }
 
-time_t requestSync()
-{
+time_t requestSync() {
   mySerial.write(TIME_REQUEST);
   return 0; // The time will be sent later in response to serial mesg
 }
 /*----------------------------------------------------------------------------------------------------------------*/
 
-/*-----------------------------------------CHECK INFO-------------------------------------------------------------*/
+/*---------------------------------------------------CHECK INFO---------------------------------------------------*/
 void checkInfo() {
   // Check for new notification
   int typeInfo_before = typeInfo;    // Store the previous information type
