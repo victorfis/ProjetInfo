@@ -69,9 +69,6 @@ void setup()  {
 
   // Time synchronisation request
   setSyncProvider(requestSync);    // Set function to call when sync required
-  mySerial.println("T");    // Show the sync require message on the bluetooth terminal
-
-  delay(1000);    // 1 sec delay
 
   // Initialisation of OLED Screen module
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Initialize with the I2C addr 0x3C (for the 128x64)
