@@ -69,7 +69,6 @@ void setup()  {
 
   // Time synchronisation request
   setSyncProvider(requestSync);    // Set function to call when sync required
-  mySerial.println("T");    // Show the sync require message on the bluetooth terminal
 
   delay(1000);    // 1 sec delay
 
