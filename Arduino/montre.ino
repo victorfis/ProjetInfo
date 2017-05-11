@@ -11,7 +11,7 @@
     we simplify the human-machine interaction.
 
     Wring:
-
+    
     Bluetooth TX-10(RX on the Arduino)
     Bluetooth RX-11(TX on the Arduino)
     Screen SDA_PIN-A4
@@ -46,6 +46,7 @@ Adafruit_SSD1306 display(OLED_RESET);
 
 // Time message define
 #define TIME_HEADER  "T"    // Header tag for serial time sync message
+
 // Info message define
 #define INFO_HEADER "I"    // Header tag for notification message
 int typeInfo = 0;    // Indicator for the type of infomation folowing INFO_HEADER
@@ -64,6 +65,11 @@ void setup()  {
   // Initialisation of Bluetooth communication module
   mySerial.begin(38400);    // Set the baud of port to 38400 in order to communicate with Bluetooth
   pinMode(13, OUTPUT);    // Define the indicator Led PIN 13 as output
+
+  // Time synchronisation request
+  mySerial.println("T");    // Show the sync require message on the bluetooth terminal
+
+  delay(1000);    // 1 sec delay
 
   // Initialisation of OLED Screen module
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Initialize with the I2C addr 0x3C (for the 128x64)
@@ -104,7 +110,7 @@ void loop() {
     held++;
   }
 
-  if (held >= 10)
+  if (held >= 10) 
     resetFunc();    // If the button is held pushed for 1 sec, watch reset
   else if(held < 10 && held != 0)
       mySerial.println("C");    // If not, send the request to clear the notif
