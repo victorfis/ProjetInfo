@@ -65,13 +65,6 @@ void setup()  {
   mySerial.begin(38400);    // Set the baud of port to 38400 in order to communicate with Bluetooth
   pinMode(13, OUTPUT);    // Define the indicator Led PIN 13 as output
 
-<<<<<<< HEAD
-=======
-  // Time synchronisation request
-  //setSyncProvider(requestSync);    // Set function to call when sync required
-//ne semble pas être utile
-
->>>>>>> 2418f3aeb74a6d6f7215f1eb7463568533b88633
   // Initialisation of OLED Screen module
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // Initialize with the I2C addr 0x3C (for the 128x64)
   display.clearDisplay(); // Show splashscreen
