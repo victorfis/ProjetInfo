@@ -209,6 +209,9 @@ void checkInfo() {
         content[i] = mySerial.read();
         delay(10);
       }
+      tone(buzzer, 1568);       // Buzz indicating message reception
+      delay(100);
+      noTone(buzzer);
     }
     else    // If there is not any message, show nothing
     {
