@@ -8,6 +8,11 @@ void setup() {
 }
 
 void loop() {
+//  if(Serial.available()) {
+//    if (Serial.read() == "1")
+//      Serial.print("1");
+//      Serial.println();
+//  }
   checkInfo();
 }
 void checkInfo() {
@@ -34,13 +39,13 @@ void checkInfo() {
   typeInfo_local = typeInfo_local / 10;
   Nb_S = typeInfo_local % 10;
 
-
+  showNotif(Nb_S, Nb_M, Nb_R);    // Call the function to show the amount of notif
+  delay(500);
 
   // Update the content of the array if there is any change
   if (typeInfo_before != typeInfo)
   {
-    showNotif(Nb_S, Nb_M, Nb_R);    // Call the function to show the amount of notif
-    delay(500);
+
     if ((Nb_S != 0) || (Nb_M != 0) || (Nb_R != 0))    // If there is any new message, get the content
     {
       for (int i = 0; i < 20 ; ++i)    // Buffer of 20 characters
@@ -56,9 +61,9 @@ void checkInfo() {
         content[i] = '\0';
       }
     }
-    showContent(content);    // Call this function to show the content
+ 
   }
-
+  showContent(content);    // Call this function to show the content
   delay(500);
 }
 
@@ -77,3 +82,4 @@ void showContent(char content[]) {
   Serial.println();
 }
 /*----------------------------------------------------------------------------------------------------------------*/
+
