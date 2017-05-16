@@ -8,11 +8,6 @@ void setup() {
 }
 
 void loop() {
-//  if(Serial.available()) {
-//    if (Serial.read() == "1")
-//      Serial.print("1");
-//      Serial.println();
-//  }
   checkInfo();
 }
 void checkInfo() {
