@@ -11,7 +11,7 @@
     we simplify the human-machine interaction.
 
     Wring:
-    
+
     Bluetooth TX-10(RX on the Arduino)
     Bluetooth RX-11(TX on the Arduino)
     Screen SDA_PIN-A4
@@ -71,8 +71,15 @@ void setup()  {
   display.clearDisplay(); // Show splashscreen
   display.setTextSize(2);    // Set the text size
   display.setTextColor(WHITE);    // Set the text color as white (white seen as blue actually)
-  display.setCursor(10, 20);   // Set the position of the 1st letter
+  display.setCursor(10, 25);   // Set the position of the 1st letter
   display.print("WATCH'INT");    // Show the welcome page in waiting for the sync
+
+  // Welcome
+  display.startscrolldiagright(0x00, 0x05);
+  delay(2000);
+  display.startscrolldiagleft(0x00, 0x05);
+  delay(2000);
+  display.stopscroll();
 
   tone(buzzer, 2093); // 0.1 sec of buzz indicating the watch boot
   delay(100);
@@ -105,7 +112,7 @@ void loop() {
     held++;
   }
 
-  if (held >= 10) 
+  if (held >= 10)
     resetFunc();    // If the button is held pushed for 1 sec, watch reset
   else if(held < 10 && held != 0)
       mySerial.println("C");    // If not, send the request to clear the notif
@@ -136,13 +143,13 @@ void digitalClockDisplay() {
   // Digital clock display of the time
   display.setTextSize(2);
   display.setTextColor(WHITE);
-  display.setCursor(15, 20);
-  display.print(hour());    // Display time
+  display.setCursor(13, 28);
+  display.print(hour()+2);    // Display time
   printDigits(minute());
   printDigits(second());
 
   // Change the line to display the date
-  display.setCursor(15, 40);
+  display.setCursor(10, 48);
   display.print(day());    //Display date
   display.print("/");
   display.print(month());
@@ -188,21 +195,21 @@ void checkInfo() {
   // Divide the integer to get seperately the amount of new notif for each type
   int typeInfo_local = typeInfo;    // Define a local variable to process this calculate
   int Nb_S;    // Define the indicator of SMS
-  int Nb_M;    // Define the indicator of Mail
+  int NB_A;    // Define the indicator of Mail
   int Nb_R;    // Define the indicator of Remind
 
   Nb_R = typeInfo_local % 10;
   typeInfo_local = typeInfo_local / 10;
-  Nb_M = typeInfo_local % 10;
+  NB_A = typeInfo_local % 10;
   typeInfo_local = typeInfo_local / 10;
   Nb_S = typeInfo_local % 10;
 
-  showNotif(Nb_S, Nb_M, Nb_R);    // Call the function to show the amount of notif
+  showNotif(Nb_S, NB_A, Nb_R);    // Call the function to show the amount of notif
 
   // Update the content of the array if there is any change
   if (typeInfo_before != typeInfo)
   {
-    if ((Nb_S != 0) || (Nb_M != 0) || (Nb_R != 0))    // If there is any new message, get the content
+    if ((Nb_S != 0) || (NB_A != 0) || (Nb_R != 0))    // If there is any new message, get the content
     {
       for (int i = 0; i < 20 ; ++i)    // Buffer of 20 characters
       {
@@ -228,16 +235,16 @@ void checkInfo() {
 }
 
 // Function showing the Notif on the screen
-void showNotif(int Nb_S, int Nb_M, int Nb_R) {
+void showNotif(int Nb_S, int NB_A, int Nb_R) {
   display.setTextSize(1);
   display.setTextColor(WHITE);
-  display.setCursor(1, 1);
+  display.setCursor(6, 1);
 
   display.print("S : ");
   display.print(Nb_S);
   display.print("  ");
-  display.print("M : ");
-  display.print(Nb_M);
+  display.print("A : ");
+  display.print(NB_A);
   display.print("  ");
   display.print("R : ");
   display.print(Nb_R);
