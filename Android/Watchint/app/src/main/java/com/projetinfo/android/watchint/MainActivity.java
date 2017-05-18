@@ -1,6 +1,7 @@
 package com.projetinfo.android.watchint;
 
 import android.os.Message;
+import android.provider.Settings;
 import android.provider.Telephony;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,7 +9,12 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.widget.Button;
 import android.bluetooth.BluetoothDevice;
+
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
+
+import android.widget.EditText;
 import android.widget.TextView;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -32,10 +38,11 @@ import android.os.Build;
 public class MainActivity extends AppCompatActivity implements OnClickListener {
     //
     private TextView text;
-    private BluetoothAdapter myBluetoothAdapter;
-    private BluetoothAdapter btAdapter = null;														// L'adaptateur bluetooth de l'appareil
-    private BluetoothSocket  btSocket	 = null;														// Interface de connexion (socket) vers le bluetooth
+    private BluetoothAdapter myBluetoothAdapter;	                                                // L'adaptateur bluetooth de l'appareil
+    private BluetoothSocket  btSocket	 = null;													// Interface de connexion (socket) vers le bluetooth
     private Handler handler;
+    private SMSReceiver smsReceiver;
+    private int S = 0, A = 0, T=0;
 
     private static String address = "20:16:11:29:58:02";										    // Adresse MAC du module bluetooth de l'arduino
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");	// SPP UUID service
@@ -50,16 +57,23 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         handler = new TextHandler();
         text = (TextView) findViewById(R.id.textView);
         final TextView tmpText = text;
-        checkBluetooth();
-        visible();
 
+        myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        //checkBluetooth();
+        //visible();
+
+        final EditText input = (EditText) findViewById(R.id.chatbox);
         Button sendBtn = (Button) findViewById(R.id.button_send);
         sendBtn.setOnClickListener(new OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                handler.sendMessage(Message.obtain(handler, 0, "Texte envoyé"));
+                String msg = input.getText().toString();
+                input.setText("");
+                remindReceived(msg);
+                handler.sendMessage(Message.obtain(handler, 0, "Android : " + msg));
+                //remindReceived(msg);
             }
         });
 
@@ -73,7 +87,51 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             }
         });
 
-        myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+
+        smsReceiver = new SMSReceiver(this);
+        IntentFilter intent = new IntentFilter();
+        intent.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
+        registerReceiver(smsReceiver, intent);
+
+    /*
+        TestReceiver receiver = new TestReceiver();
+        IntentFilter intent = new IntentFilter();
+        intent.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
+        intent.addAction(Telephony.Sms.Intents.SMS_DELIVER_ACTION);
+        intent.addAction(Telephony.Sms.Intents.SMS_REJECTED_ACTION);
+        intent.addAction(Telephony.Sms.Intents.SMS_CB_RECEIVED_ACTION);
+        intent.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
+        intent.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
+
+
+        getApplicationContext().registerReceiver(receiver, intent);*/
+    }
+
+    public void smsReceived(String from)
+    {
+        ++S;
+        Toast.makeText(getApplicationContext(), "TEST", Toast.LENGTH_SHORT).show();
+        connectThread.addMessageToSend("I" + S + A + T + "SMS FROM " + from);
+        handler.sendMessage(Message.obtain(handler, 0, "Android : J'ai recu un SMS"));
+    }
+
+    public void callReceived(String from)
+    {
+        ++A;
+        connectThread.addMessageToSend("I" + S + A + "CALL FROM " + from);
+
+    }
+
+    public void remindReceived(String from)
+    {
+        ++T;
+        connectThread.addMessageToSend("I" + S + A + T + from);
+    }
+
+    public void appendText(String text)
+    {
+        handler.sendMessage(Message.obtain(handler, 0, text));
     }
 
     public void onResume()
@@ -145,11 +203,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     //----------Vérifie que le bluetooth est supporté puis si il est activé sur l'appareil--------//
     private void checkBluetooth()
     {
-        if(btAdapter == null)
-            showErrorExit("Le bluetooth n'est pas supporté");
+        if(myBluetoothAdapter == null)
+            showErrorExit("Non supporté");
         else
         {
-            if (btAdapter.isEnabled())
+            if (myBluetoothAdapter.isEnabled())
                 DEBUG_showMessage("Bluetooth ON");
             else
             {
@@ -158,7 +216,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             }
         }
     }
-
 
 
     @Override
@@ -175,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(smsReceiver);
     }
 
     //---------------------------Ouvre un socket vers le module spécifié--------------------------//
@@ -201,9 +259,23 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     {
         private final InputStream  inStream;
         private final OutputStream outStream;
+        private volatile Queue<String> messagesToSend;
+
+        public synchronized void addMessageToSend(String str)
+        {
+            messagesToSend.add(str);
+            while (!messagesToSend.isEmpty())
+            {
+                String msg = messagesToSend.poll();
+                write(msg);
+                handler.sendMessage(Message.obtain(handler, 0, "Android : " + msg));
+            }
+        }
 
         public ConnectedThread(BluetoothSocket socket)
         {
+            messagesToSend = new LinkedList<>();
+
             InputStream  tmpIn  = null;
             OutputStream tmpOut = null;
                                                                                                     //Les fluxs in et out doivent être finaux, on utilise donc des variables temporaires
@@ -225,33 +297,54 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         public void run()
         {
             byte[] buffer = new byte[10];  														    // buffer pour le flux entrant
-            int bytes;																				// Nombres d'octets reçus
+            int bytes;                                                                              // Nombres d'octets reçus
+
+            String data = "T" + ((int) (System.currentTimeMillis() / 1000L));
+            write(data);
+            handler.sendMessage(Message.obtain(handler, 0, "Android : " + data));
+
+
 
             while (true)
             {
                 try
                 {
-                                                                                                    // Lire depuis le flux d'entrée
-                    bytes = inStream.read(buffer);        										    // Obtenir le nombre d'octets lus,
+                    // Lire depuis le flux d'entrée
+                    bytes = inStream.read(buffer);                                                  // Obtenir le nombre d'octets lus,
                                                                                                     // ceux-ci sont stockés dans le buffer
-                    if (bytes > 0)
-                    {
 
-                        if (buffer[0] == 'C'){
-                            String msg1 = "TI000";
+                    if (bytes > 0) {
+                        if (buffer[0] == 'C') {
+                            A = 0;
+                            S = 0;
+                            T = 0;
+                            String msg1 = "I000";
                             write(msg1);
+                            handler.sendMessage(Message.obtain(handler, 0, "Arduino : " + stringOf(buffer, bytes)));
+                            handler.sendMessage(Message.obtain(handler, 0, "Android : " + msg1));
+
                         }
-
-                        //TODO: réception données
-                        handler.sendMessage(Message.obtain(handler, 0, "Arduino: " + stringOf(buffer, bytes)));
-
-                        String data = "T" + ((int) (System.currentTimeMillis() / 1000L));
-                        write(data);
-
-                        handler.sendMessage(Message.obtain(handler, 0, "Smartphone: " + data));
+                        else {
+                            handler.sendMessage(Message.obtain(handler, 0, "Arduino : " + stringOf(buffer, bytes)));
+                        }
                     }
-                } catch (IOException e)
+
+                    /*while (!messagesToSend.isEmpty())
+                    {
+                        String msg = messagesToSend.poll();
+                        write(msg);
+                        handler.sendMessage(Message.obtain(handler, 0, "Android : " + msg));
+                    }*/
+                        //TODO: réception données
+                        //handler.sendMessage(Message.obtain(handler, 0, "Arduino : " + stringOf(buffer, bytes)));
+
+                        //handler.sendMessage(Message.obtain(handler, 0, "Smartphone: " + data));
+
+
+                    //Thread.sleep(100);
+                } catch (IOException/* | InterruptedException*/ e)
                 {
+                    appendText(e.getMessage());
                     break;
                 }
             }
@@ -266,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         }
 
         //--------------------------Envoyer des données vers le module arduino--------------------//
-        private void write(String message)
+        public void write(String message)
         {
             byte[] msgBuffer = message.getBytes();													// Obtenir le message en binaire
 
@@ -275,8 +368,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 outStream.write(msgBuffer);														    // Ecrit les données binaires sur le flux
             } catch (IOException e)
             {
-                showErrorExit("Envoi de données - les données n'ont pas pu être écrites : " + e.getMessage()
-                        + "\nVérifiez que le SPP UUID: " + MY_UUID.toString() + " existe.");
+
             }
         }
     }
