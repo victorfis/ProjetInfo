@@ -198,11 +198,16 @@ void checkInfo() {
   int NB_A;    // Define the indicator of Mail
   int Nb_R;    // Define the indicator of Remind
 
-  Nb_R = typeInfo_local % 10;
-  typeInfo_local = typeInfo_local / 10;
-  NB_A = typeInfo_local % 10;
-  typeInfo_local = typeInfo_local / 10;
-  Nb_S = typeInfo_local % 10;
+  if(typeInfo_local<1000){                          //Check if the number has a correct length
+      Nb_R = typeInfo_local % 10;                   //devide the number into 3 others
+      typeInfo_local = typeInfo_local / 10;
+      NB_A = typeInfo_local % 10;
+      typeInfo_local = typeInfo_local / 10;
+      Nb_S = typeInfo_local % 10;
+  }
+  else{                                            //enable not to execute the following if
+      typeInfo = typeInfo_before;
+  }
 
   showNotif(Nb_S, NB_A, Nb_R);    // Call the function to show the amount of notif
 
