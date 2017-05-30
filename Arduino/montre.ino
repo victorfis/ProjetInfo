@@ -49,8 +49,10 @@ Adafruit_SSD1306 display(OLED_RESET);
 
 // Info message define
 #define INFO_HEADER "I"    // Header tag for notification message
-int typeInfo = 0;    // Indicator for the type of infomation folowing INFO_HEADER
-char content[20];    // Array to store the content of message or mail
+int Nb_S;
+int Nb_A;
+int Nb_R;
+String content;
 
 const int BUTTON = 7;    // Button define
 
@@ -181,66 +183,25 @@ void processSyncMessage() {
 
 /*---------------------------------------------------CHECK INFO---------------------------------------------------*/
 void checkInfo() {
-  // Check for new notification
-  int typeInfo_before = typeInfo;    // Store the previous information type
-
-  // Get the notification type
-  if (mySerial.available()) {
-    if (mySerial.find(INFO_HEADER))    // Find the header of notification "I"
-    {
-      typeInfo = mySerial.parseInt();    // Extract type of information as integer
-    }
+  String buffer = "";
+  buffer = mySerial.readString();
+  if(buffer.startsWith("I")) {
+    Nb_S = buffer.substring(1,buffer.indexOf(' ',1)).toInt();
+    Nb_A = buffer.substring(buffer.indexOf(' ',1)+1, buffer.indexOf(' ',buffer.indexOf(' ',1)+1)).toInt();
+    Nb_R = buffer.substring(buffer.indexOf(' ',buffer.indexOf(' ',1)+1)+1,buffer.indexOf(' ',buffer.indexOf(' ',buffer.indexOf(' ',1)+1)+1)).toInt();
+    content = buffer.substring(buffer.indexOf(' ',buffer.indexOf(' ',buffer.indexOf(' ',buffer.indexOf(' ',1)+1)+1))+1);
   }
-
-  // Divide the integer to get seperately the amount of new notif for each type
-  int typeInfo_local = typeInfo;    // Define a local variable to process this calculate
-  int Nb_S;    // Define the indicator of SMS
-  int NB_A;    // Define the indicator of Mail
-  int Nb_R;    // Define the indicator of Remind
-
-  if(typeInfo_local<1000){                          //Check if the number has a correct length
-      Nb_R = typeInfo_local % 10;                   //devide the number into 3 others
-      typeInfo_local = typeInfo_local / 10;
-      NB_A = typeInfo_local % 10;
-      typeInfo_local = typeInfo_local / 10;
-      Nb_S = typeInfo_local % 10;
-  }
-  else{                                            //enable not to execute the following if
-      typeInfo = typeInfo_before;
-  }
-
-  showNotif(Nb_S, NB_A, Nb_R);    // Call the function to show the amount of notif
-
-  // Update the content of the array if there is any change
-  if (typeInfo_before != typeInfo)
-  {
-    if ((Nb_S != 0) || (NB_A != 0) || (Nb_R != 0))    // If there is any new message, get the content
-    {
-      for (int i = 0; i < 20 ; ++i)    // Buffer of 20 characters
-      {
-        content[i] = mySerial.read();
-        delay(10);
-      }
-      tone(buzzer, 1568);       // Buzz indicating message reception
-      delay(100);
-      noTone(buzzer);
-    }
-    else    // If there is not any message, show nothing
-    {
-      for (int i = 0; i < 20 ; ++i)
-      {
-        content[i] = '\0';
-      }
-    }
-  }
-
-  showContent(content);    // Call this function to show the content
-
-
+  Serial.println(Nb_S);
+  Serial.println(Nb_A);
+  Serial.println(Nb_R);
+  showNotif(Nb_S, Nb_A, Nb_R);
+  if ((Nb_S == 0) && (Nb_A == 0) && (Nb_R == 0)) {
+    return 0;
+  } else showContent(content);
 }
 
 // Function showing the Notif on the screen
-void showNotif(int Nb_S, int NB_A, int Nb_R) {
+void showNotif(int Nb_S, int Nb_A, int Nb_R) {
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(6, 1);
@@ -249,24 +210,17 @@ void showNotif(int Nb_S, int NB_A, int Nb_R) {
   display.print(Nb_S);
   display.print("  ");
   display.print("A : ");
-  display.print(NB_A);
+  display.print(Nb_A);
   display.print("  ");
   display.print("R : ");
   display.print(Nb_R);
   display.display();
 }
 
-// Function showing the content of message on the screen
-void showContent(char content[]) {
+void showContent(String content) {
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(10, 10);
-
-  for (int i = 0; i < 20; ++i)
-  {
-    display.print(content[i]);
-  }
-
+  display.print(content);
   display.display();
 }
-/*----------------------------------------------------------------------------------------------------------------*/
