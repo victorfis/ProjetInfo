@@ -197,7 +197,10 @@ void checkInfo() {
   showNotif(Nb_S, Nb_A, Nb_R);
   if ((Nb_S == 0) && (Nb_A == 0) && (Nb_R == 0)) {
     return 0;
-  } else showContent(content);
+  } 
+   else{
+      showContent(content);
+   }
 }
 
 // Function showing the Notif on the screen
