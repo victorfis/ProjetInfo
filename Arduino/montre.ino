@@ -197,8 +197,13 @@ void checkInfo() {
   showNotif(Nb_S, Nb_A, Nb_R);
   if ((Nb_S == 0) && (Nb_A == 0) && (Nb_R == 0)) {
     return 0;
-  } else showContent(content);
-}
+  } 
+   else{
+      showContent(content);
+      tone(buzzer, 1568);       // Buzz indicating message reception
+      delay(100);
+      noTone(buzzer);
+    }
 
 // Function showing the Notif on the screen
 void showNotif(int Nb_S, int Nb_A, int Nb_R) {
