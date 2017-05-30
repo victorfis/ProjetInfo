@@ -184,7 +184,11 @@ void processSyncMessage() {
 /*---------------------------------------------------CHECK INFO---------------------------------------------------*/
 void checkInfo() {
   String buffer = "";
-  buffer = mySerial.readString();
+  if (mySerial.available()) {
+    buffer = mySerial.readString();
+    
+  }
+
   if(buffer.startsWith("I")) {
     Nb_S = buffer.substring(1,buffer.indexOf(' ',1)).toInt();
     Nb_A = buffer.substring(buffer.indexOf(' ',1)+1, buffer.indexOf(' ',buffer.indexOf(' ',1)+1)).toInt();
